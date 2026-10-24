@@ -1,0 +1,1160 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modesto Informed — Independent Civic & Agenda Alert Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: "#f0fdf4",
+                100: "#dcfce7",
+                500: "#22c55e",
+                600: "#16a34a",
+                700: "#15803d",
+                800: "#166534",
+                900: "#14532d",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Alpine.js -->
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+    ></script>
+    <!-- Font Awesome Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Mapbox GL JS -->
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+      .mapboxgl-popup-content {
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-brand-500 selection:text-white"
+    x-data="modestoApp()"
+  >
+    <!-- Independent Notice Banner -->
+    <div
+      class="bg-amber-50 border-b border-amber-200/80 px-4 py-2.5 text-xs sm:text-sm text-amber-900 text-center font-medium flex items-center justify-center gap-2"
+    >
+      <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+      <span
+        ><strong>Independent Community Project:</strong> Not affiliated with or
+        funded by the City of Modesto municipal government. Built to keep
+        residents informed and heard.</span
+      >
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header
+      class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200"
+    >
+      <div
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-xl bg-brand-700 text-white flex items-center justify-center font-black text-xl shadow-md shadow-brand-700/20"
+          >
+            MI
+          </div>
+          <div>
+            <span
+              class="text-lg font-bold tracking-tight text-slate-900 block leading-none"
+              >Modesto Informed</span
+            >
+            <span
+              class="text-[10px] uppercase tracking-wider font-semibold text-slate-500"
+              >Civic Transparency & Agenda Alerts</span
+            >
+          </div>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <nav
+          class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600"
+        >
+          <a href="#subscribe" class="hover:text-brand-700 transition"
+            >Get Alerts</a
+          >
+          <a href="#district-finder" class="hover:text-brand-700 transition"
+            >Find My District</a
+          >
+          <a href="#council-members" class="hover:text-brand-700 transition"
+            >Council & Records</a
+          >
+          <a href="#how-to-be-heard" class="hover:text-brand-700 transition"
+            >How to Be Heard</a
+          >
+        </nav>
+
+        <!-- Language Quick Toggle -->
+        <div
+          class="flex items-center gap-2 bg-slate-100 p-1 rounded-lg text-xs font-semibold"
+        >
+          <button
+            @click="setLanguage('en')"
+            :class="language === 'en' ? 'bg-white text-brand-800 shadow-sm' : 'text-slate-500 hover:text-slate-900'"
+            class="px-2.5 py-1 rounded-md transition"
+          >
+            🇺🇸 EN
+          </button>
+          <button
+            @click="setLanguage('es')"
+            :class="language === 'es' ? 'bg-white text-brand-800 shadow-sm' : 'text-slate-500 hover:text-slate-900'"
+            class="px-2.5 py-1 rounded-md transition"
+          >
+            🇲🇽 ES
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section
+      class="bg-gradient-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200 py-12 lg:py-16"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <span
+          class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-brand-100 text-brand-800 mb-4 border border-brand-200"
+        >
+          <i class="fa-solid fa-bullhorn text-brand-600"></i>
+          <span
+            x-text="language === 'en' ? 'Democratizing Local Democracy' : 'Democratizando la Democracia Local'"
+          ></span>
+        </span>
+        <h1
+          class="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight max-w-4xl mx-auto leading-tight"
+          x-text="language === 'en' ? 'Never Miss a Modesto City Council Decision That Affects You' : 'Nunca Te Pierdas Una Decisión del Concejo Municipal de Modesto'"
+        ></h1>
+        <p
+          class="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed"
+          x-text="language === 'en' 
+                ? 'Decisions on housing, public safety, water rates, and parks happen every Tuesday. Most residents miss out because agendas are hard to track. We fix that.'
+                : 'Las decisiones sobre vivienda, seguridad pública, tarifas de agua y parques ocurren cada martes. La mayoría no participa por falta de avisos claros. Nosotros lo solucionamos.'"
+        ></p>
+      </div>
+    </section>
+
+    <!-- Intake Subscription Form -->
+    <section id="subscribe" class="py-12 bg-slate-50">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6">
+        <div
+          class="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200 overflow-hidden"
+        >
+          <div class="p-6 sm:p-8">
+            <div class="mb-6">
+              <h2
+                class="text-2xl font-bold text-slate-900"
+                x-text="language === 'en' ? 'Sign Up for Custom Council Meeting Alerts' : 'Regístrate para Recibir Alertas Personalizadas'"
+              ></h2>
+              <p
+                class="text-sm text-slate-500 mt-1"
+                x-text="language === 'en' ? 'Select the local topics you care about. We only email you when these topics appear on an upcoming agenda.' : 'Selecciona los temas de tu interés. Solo te enviaremos correos cuando aparezcan en la agenda.'"
+              ></p>
+            </div>
+
+            <template x-if="submitted">
+              <div
+                class="bg-emerald-50 border border-emerald-200 rounded-xl p-6 text-center"
+              >
+                <div
+                  class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl"
+                >
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <h3
+                  class="text-lg font-bold text-emerald-900"
+                  x-text="language === 'en' ? 'Subscription Active!' : '¡Suscripción Activada!'"
+                ></h3>
+                <p
+                  class="text-sm text-emerald-700 mt-1"
+                  x-text="language === 'en' ? 'We registered ' + email + '. You will receive alerts when your selected categories appear on council agendas.' : 'Hemos registrado a ' + email + '. Recibirás alertas cuando tus categorías aparezcan en la agenda.'"
+                ></p>
+                <button
+                  @click="submitted = false"
+                  class="mt-4 text-xs font-semibold text-emerald-800 underline hover:text-emerald-900"
+                >
+                  <span
+                    x-text="language === 'en' ? 'Update preferences' : 'Actualizar preferencias'"
+                  ></span>
+                </button>
+              </div>
+            </template>
+
+            <form
+              x-show="!submitted"
+              @submit.prevent="submitForm()"
+              class="space-y-6"
+            >
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                    x-text="language === 'en' ? 'Your Name' : 'Tu Nombre'"
+                  ></label>
+                  <input
+                    type="text"
+                    x-model="name"
+                    required
+                    placeholder="e.g. Joe Thunder"
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 text-sm outline-none"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                    x-text="language === 'en' ? 'Email Address' : 'Correo Electrónico'"
+                  ></label>
+                  <input
+                    type="email"
+                    x-model="email"
+                    required
+                    placeholder="mail@thunder.com"
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-brand-500 text-sm outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                  x-text="language === 'en' ? 'Alert Language' : 'Idioma de Alertas'"
+                ></label>
+                <div class="grid grid-cols-2 gap-3">
+                  <label
+                    class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer"
+                    :class="language === 'en' ? 'border-brand-600 bg-brand-50/50 text-brand-900 font-medium' : 'border-slate-200 text-slate-600'"
+                  >
+                    <input
+                      type="radio"
+                      name="language"
+                      value="en"
+                      x-model="language"
+                      class="text-brand-600"
+                    />
+                    <span class="text-sm">English Alerts</span>
+                  </label>
+                  <label
+                    class="flex items-center gap-3 p-3 rounded-lg border cursor-pointer"
+                    :class="language === 'es' ? 'border-brand-600 bg-brand-50/50 text-brand-900 font-medium' : 'border-slate-200 text-slate-600'"
+                  >
+                    <input
+                      type="radio"
+                      name="language"
+                      value="es"
+                      x-model="language"
+                      class="text-brand-600"
+                    />
+                    <span class="text-sm">Alertas en Español</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Categories from Backend/CSV Data -->
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <label
+                    class="block text-xs font-bold text-slate-700 uppercase tracking-wider"
+                    x-text="language === 'en' ? 'Select Categories of Interest' : 'Selecciona Categorías de Interés'"
+                  ></label>
+                  <span
+                    class="text-xs text-slate-500"
+                    x-text="selectedCategories.length + ' ' + (language === 'en' ? 'selected' : 'seleccionadas')"
+                  ></span>
+                </div>
+
+                <div class="relative mb-3">
+                  <i
+                    class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"
+                  ></i>
+                  <input
+                    type="text"
+                    x-model="categorySearch"
+                    :placeholder="language === 'en' ? 'Filter categories...' : 'Filtrar categorías...'"
+                    class="w-full pl-9 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:ring-1 focus:ring-brand-500 outline-none"
+                  />
+                </div>
+
+                <!-- Topics Group -->
+                <div class="mb-3">
+                  <span
+                    class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5"
+                    x-text="language === 'en' ? 'City Topics' : 'Temas de la Ciudad'"
+                  ></span>
+                  <div
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1"
+                  >
+                    <template x-for="cat in topicCategories" :key="cat.key">
+                      <div
+                        @click="toggleCategory(cat.key)"
+                        class="p-2.5 rounded-lg border cursor-pointer transition flex items-center justify-between text-xs select-none"
+                        :class="selectedCategories.includes(cat.key) ? 'border-brand-600 bg-brand-50/60 text-brand-900 font-bold' : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'"
+                      >
+                        <span
+                          x-text="language === 'en' ? cat.label_en : cat.label_es"
+                        ></span>
+                        <i
+                          class="fa-solid"
+                          :class="selectedCategories.includes(cat.key) ? 'fa-check-circle text-brand-600' : 'fa-circle-plus text-slate-300'"
+                        ></i>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Decision Types Group -->
+                <div>
+                  <span
+                    class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5"
+                    x-text="language === 'en' ? 'Decision Types' : 'Tipos de Decisión'"
+                  ></span>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <template x-for="cat in decisionCategories" :key="cat.key">
+                      <div
+                        @click="toggleCategory(cat.key)"
+                        class="p-2.5 rounded-lg border cursor-pointer transition flex items-center justify-between text-xs select-none"
+                        :class="selectedCategories.includes(cat.key) ? 'border-brand-600 bg-brand-50/60 text-brand-900 font-bold' : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'"
+                      >
+                        <span
+                          x-text="language === 'en' ? cat.label_en : cat.label_es"
+                        ></span>
+                        <i
+                          class="fa-solid"
+                          :class="selectedCategories.includes(cat.key) ? 'fa-check-circle text-brand-600' : 'fa-circle-plus text-slate-300'"
+                        ></i>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                :disabled="selectedCategories.length === 0"
+                class="w-full py-3 px-4 bg-brand-700 hover:bg-brand-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2"
+              >
+                <i class="fa-regular fa-paper-plane"></i>
+                <span
+                  x-text="language === 'en' ? 'Subscribe to Meeting Alerts' : 'Suscribirme a Alertas de Reuniones'"
+                ></span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- District Lookup Section -->
+    <section
+      id="district-finder"
+      class="py-12 bg-white border-y border-slate-200"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-8">
+          <span
+            class="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-100 px-2.5 py-1 rounded-full"
+            >District Map & Representatives</span
+          >
+          <h2
+            class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2"
+            x-text="language === 'en' ? 'Find Your Council Representative' : 'Encuentra a tu Representante del Concejo'"
+          ></h2>
+          <p
+            class="text-sm text-slate-600 mt-1"
+            x-text="language === 'en' ? 'Select a district or type your street address to see your district representative.' : 'Selecciona un distrito o ingresa tu dirección.'"
+          ></p>
+        </div>
+
+        <!-- District Quick Button Selector -->
+        <div class="flex flex-wrap justify-center gap-2 mb-6">
+          <template x-for="dNum in [1, 2, 3, 4, 5, 6]" :key="dNum">
+            <button
+              @click="selectDistrict(dNum)"
+              :class="activeDistrictId === dNum ? 'bg-brand-700 text-white font-bold shadow' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+              class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition"
+            >
+              <span x-text="'District ' + dNum"></span>
+            </button>
+          </template>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div
+            class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4"
+          >
+            <div>
+              <label
+                class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                x-text="language === 'en' ? 'Enter Address' : 'Ingresa tu Dirección'"
+              ></label>
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  x-model="searchAddress"
+                  @keydown.enter="searchLocation()"
+                  :placeholder="language === 'en' ? 'e.g. 1010 10th St, Modesto' : 'ej. 1010 10th St, Modesto'"
+                  class="flex-1 px-3.5 py-2 text-sm border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-brand-500"
+                />
+                <button
+                  @click="searchLocation()"
+                  class="bg-brand-700 text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-brand-800 transition"
+                >
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Selected District Card -->
+            <template x-if="activeDistrict">
+              <div
+                class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3"
+              >
+                <div
+                  class="flex items-center justify-between border-b border-slate-100 pb-2"
+                >
+                  <span
+                    class="text-xs font-black uppercase text-brand-700 tracking-wider"
+                    x-text="'District ' + activeDistrict.id"
+                  ></span>
+                  <span
+                    class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-semibold"
+                    x-text="activeDistrict.area"
+                  ></span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <img
+                    :src="activeDistrict.repPhoto"
+                    :alt="activeDistrict.repName"
+                    class="w-12 h-12 rounded-full object-cover border border-slate-300"
+                  />
+                  <div>
+                    <h4
+                      class="font-bold text-slate-900 text-sm leading-tight"
+                      x-text="activeDistrict.repName"
+                    ></h4>
+                    <p
+                      class="text-xs text-slate-500"
+                      x-text="language === 'en' ? 'Council Member' : 'Miembro del Concejo'"
+                    ></p>
+                    <p
+                      class="text-[11px] text-brand-700 font-medium"
+                      x-text="activeDistrict.email"
+                    ></p>
+                  </div>
+                </div>
+                <div
+                  class="pt-2 text-xs text-slate-600 border-t border-slate-100"
+                >
+                  <strong>Boundaries:</strong>
+                  <span x-text="activeDistrict.description"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <div
+            class="lg:col-span-2 bg-slate-200 rounded-2xl overflow-hidden border border-slate-300 shadow-inner h-[380px] relative"
+          >
+            <div id="map" class="w-full h-full"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Council Directory Section -->
+    <section id="council-members" class="py-12 bg-slate-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+          <span
+            class="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-100 px-2.5 py-1 rounded-full"
+            >Council Directory</span
+          >
+          <h2
+            class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2"
+            x-text="language === 'en' ? 'Modesto City Council Members' : 'Concejales de Modesto'"
+          ></h2>
+          <p
+            class="text-sm text-slate-600 mt-1"
+            x-text="language === 'en' ? 'Click on any member to view their profile and full voting history.' : 'Haz clic en cualquier miembro para ver su perfil e historial de votación.'"
+          ></p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <template x-for="member in councilMembers" :key="member.id">
+            <div
+              class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col justify-between"
+            >
+              <div class="p-5">
+                <div class="flex items-center gap-4">
+                  <img
+                    :src="member.photo"
+                    :alt="member.name"
+                    class="w-14 h-14 rounded-full object-cover border-2 border-slate-200"
+                  />
+                  <div>
+                    <span
+                      class="text-[10px] font-extrabold uppercase tracking-wider text-brand-700 bg-brand-50 px-2 py-0.5 rounded border border-brand-200"
+                      x-text="member.district"
+                    ></span>
+                    <h3
+                      class="font-bold text-slate-900 text-base mt-1"
+                      x-text="member.name"
+                    ></h3>
+                    <p class="text-xs text-slate-500" x-text="member.role"></p>
+                  </div>
+                </div>
+                <div
+                  class="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-600 space-y-1"
+                >
+                  <div>
+                    <i class="fa-solid fa-envelope text-slate-400 mr-1"></i>
+                    <span x-text="member.email"></span>
+                  </div>
+                  <div>
+                    <i class="fa-solid fa-phone text-slate-400 mr-1"></i>
+                    <span x-text="member.phone"></span>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="bg-slate-50 px-5 py-3 border-t border-slate-200 flex items-center justify-between text-xs"
+              >
+                <span
+                  class="text-slate-500 font-medium"
+                  x-text="member.recentVotesCount + ' ' + (language === 'en' ? 'tracked votes' : 'votos registrados')"
+                ></span>
+                <button
+                  @click="openMemberModal(member)"
+                  class="px-3 py-1.5 bg-brand-700 hover:bg-brand-800 text-white font-bold rounded-lg transition"
+                >
+                  <span
+                    x-text="language === 'en' ? 'View Profile & Votes' : 'Ver Perfil y Votos'"
+                  ></span>
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal for Selected Council Member -->
+    <div
+      x-cloak
+      x-show="modalOpen"
+      class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4"
+    >
+      <div
+        @click.outside="modalOpen = false"
+        class="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200"
+      >
+        <template x-if="activeMember">
+          <div>
+            <!-- Header -->
+            <div
+              class="bg-slate-900 text-white p-6 rounded-t-2xl flex items-start justify-between"
+            >
+              <div class="flex items-center gap-4">
+                <img
+                  :src="activeMember.photo"
+                  :alt="activeMember.name"
+                  class="w-16 h-16 rounded-full object-cover border-2 border-brand-500"
+                />
+                <div>
+                  <span
+                    class="text-xs font-bold text-brand-400 uppercase tracking-wider"
+                    x-text="activeMember.district"
+                  ></span>
+                  <h3
+                    class="text-xl font-bold text-white"
+                    x-text="activeMember.name"
+                  ></h3>
+                  <p
+                    class="text-xs text-slate-300"
+                    x-text="activeMember.role + ' • Modesto City Council'"
+                  ></p>
+                </div>
+              </div>
+              <button
+                @click="modalOpen = false"
+                class="text-slate-400 hover:text-white text-xl"
+              >
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <!-- Member Voting Table -->
+            <div class="p-6 space-y-4">
+              <h4
+                class="font-bold text-slate-900 text-sm uppercase tracking-wider"
+                x-text="language === 'en' ? 'Recent Key Voting Record' : 'Historial de Votación Reciente'"
+              ></h4>
+              <div class="border border-slate-200 rounded-xl overflow-hidden">
+                <table class="w-full text-left text-xs">
+                  <thead
+                    class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase"
+                  >
+                    <tr>
+                      <th class="p-3">Date</th>
+                      <th class="p-3">Measure / Topic</th>
+                      <th class="p-3">Category</th>
+                      <th class="p-3">Vote</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <template x-for="v in activeMemberVotes" :key="v.id">
+                      <tr class="hover:bg-slate-50">
+                        <td
+                          class="p-3 font-mono text-slate-500 whitespace-nowrap"
+                          x-text="v.date"
+                        ></td>
+                        <td class="p-3">
+                          <div
+                            class="font-bold text-slate-900"
+                            x-text="v.title"
+                          ></div>
+                          <div
+                            class="text-[11px] text-slate-500"
+                            x-text="v.summary"
+                          ></div>
+                        </td>
+                        <td class="p-3 whitespace-nowrap">
+                          <span
+                            class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-bold"
+                            x-text="v.category"
+                          ></span>
+                        </td>
+                        <td class="p-3 whitespace-nowrap">
+                          <span
+                            class="px-2 py-0.5 rounded text-[10px] font-black"
+                            :class="v.vote === 'YES' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                            x-text="v.vote"
+                          >
+                          </span>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- How To Be Heard Participation Hub -->
+    <section
+      id="how-to-be-heard"
+      class="py-12 bg-white border-t border-slate-200"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-2xl mx-auto mb-10">
+          <span
+            class="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-100 px-2.5 py-1 rounded-full"
+            >Public Participation</span
+          >
+          <h2
+            class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2"
+            x-text="language === 'en' ? 'How to Make Your Voice Heard' : 'Cómo Hacer Oír tu Voz'"
+          ></h2>
+          <p
+            class="text-sm text-slate-600 mt-1"
+            x-text="language === 'en' ? 'You have a legal right under California law (Brown Act) to address your city council.' : 'Tienes derecho legal bajo la Ley Brown para hablar ante el concejo.'"
+          ></p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+            <div
+              class="w-10 h-10 bg-brand-100 text-brand-800 rounded-xl flex items-center justify-center font-black text-lg mb-4"
+            >
+              1
+            </div>
+            <h3
+              class="font-bold text-slate-900 text-base mb-2"
+              x-text="language === 'en' ? 'In-Person Public Comment' : 'Comentario Presencial'"
+            ></h3>
+            <p
+              class="text-xs text-slate-600 leading-relaxed mb-3"
+              x-text="language === 'en' ? 'Meetings take place Tuesdays at 5:30 PM at 1010 10th Street Plaza. Fill out a green Speaker Card before the item is called.' : 'Las reuniones son los martes a las 5:30 PM en 1010 10th Street Plaza.'"
+            ></p>
+            <span
+              class="text-[11px] font-semibold text-brand-700 bg-brand-50 px-2 py-1 rounded"
+              >3 Minutes Allocated</span
+            >
+          </div>
+
+          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+            <div
+              class="w-10 h-10 bg-brand-100 text-brand-800 rounded-xl flex items-center justify-center font-black text-lg mb-4"
+            >
+              2
+            </div>
+            <h3
+              class="font-bold text-slate-900 text-base mb-2"
+              x-text="language === 'en' ? 'Submit eComment Online' : 'Enviar eComment en Línea'"
+            ></h3>
+            <p
+              class="text-xs text-slate-600 leading-relaxed mb-3"
+              x-text="language === 'en' ? 'Submit written comments directly on agenda items up to 2 hours prior to the meeting. Comments enter official public record.' : 'Envía comentarios escritos en los temas de la agenda hasta 2 horas antes.'"
+            ></p>
+            <span
+              class="text-[11px] font-semibold text-brand-700 bg-brand-50 px-2 py-1 rounded"
+              >Official City Record</span
+            >
+          </div>
+
+          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+            <div
+              class="w-10 h-10 bg-brand-100 text-brand-800 rounded-xl flex items-center justify-center font-black text-lg mb-4"
+            >
+              3
+            </div>
+            <h3
+              class="font-bold text-slate-900 text-base mb-2"
+              x-text="language === 'en' ? 'Call In via Zoom / Phone' : 'Llamada por Teléfono o Zoom'"
+            ></h3>
+            <p
+              class="text-xs text-slate-600 leading-relaxed mb-3"
+              x-text="language === 'en' ? 'Dial the public comment line during live meetings. Press *9 to raise your hand when the Mayor opens public comment.' : 'Marca la línea de comentarios en vivo durante la reunión. Presiona *9 para levantar la mano.'"
+            ></p>
+            <span
+              class="text-[11px] font-semibold text-brand-700 bg-brand-50 px-2 py-1 rounded"
+              >Live Remote Comment</span
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer
+      class="bg-slate-900 text-slate-400 py-8 border-t border-slate-800 text-xs"
+    >
+      <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+        <p class="font-bold text-slate-200">
+          Modesto Informed — Independent Community Civic Platform
+        </p>
+        <p>
+          Designed for Modesto residents to increase local democratic
+          participation. By AJS @ devfest
+        </p>
+      </div>
+    </footer>
+
+    <!-- Alpine App Logic -->
+    <script>
+      function modestoApp() {
+        return {
+          name: "Joe Thunder",
+          email: "mail@thunder.com",
+          language: "en",
+          selectedCategories: [],
+          categorySearch: "",
+          submitted: false,
+          searchAddress: "",
+          activeDistrictId: 4,
+          modalOpen: false,
+          activeMember: null,
+          mapboxToken:
+            "pk.eyJ1Ijoic2F1bHJleWVzNDIzMTUiLCJhIjoiY212N2NvY2NqMDF0NTJ4bjdkdTcxZTluaCJ9.gs8_Nv2mmoUWTHbGU4LJ3Q",
+          map: null,
+
+          // Categories fetched dynamically from server.js (/api/categories)
+          allCategories: [],
+
+          async initCategories() {
+            try {
+              const res = await fetch('http://localhost:3000/api/categories');
+              if (res.ok) {
+                const data = await res.json();
+                if (data && data.length > 0) {
+                  this.allCategories = data;
+                  return;
+                }
+              }
+            } catch (err) {
+              console.warn('Could not fetch categories from server, using defaults.');
+            }
+
+            // Fallback list matching CSV structure if server isn't reachable
+            this.allCategories = [
+              { key: "budget", group: "topic", label_en: "City budget, taxes & fees", label_es: "Presupuesto, impuestos y tarifas" },
+              { key: "streets", group: "topic", label_en: "Streets, traffic & parking", label_es: "Calles, tráfico y estacionamiento" },
+              { key: "parks", group: "topic", label_en: "Parks & recreation", label_es: "Parques y recreación" },
+              { key: "development", group: "topic", label_en: "New development & zoning", label_es: "Construcción y zonificación" },
+              { key: "water", group: "topic", label_en: "Water & sewer", label_es: "Agua y drenaje" },
+              { key: "housing", group: "topic", label_en: "Housing & homelessness", label_es: "Vivienda y personas sin hogar" },
+              { key: "business", group: "topic", label_en: "Business & downtown", label_es: "Negocios y el centro" },
+              { key: "fire", group: "topic", label_en: "Fire & emergencies", label_es: "Bomberos y emergencias" },
+              { key: "health", group: "topic", label_en: "Health & mental health", label_es: "Salud y salud mental" },
+              { key: "workers", group: "topic", label_en: "City workers & pay", label_es: "Empleados municipales y salarios" },
+              { key: "arts", group: "topic", label_en: "Arts, culture & events", label_es: "Arte, cultura y eventos" },
+              { key: "police", group: "topic", label_en: "Police & crime", label_es: "Policía y delitos" },
+              { key: "neighborhood", group: "topic", label_en: "Blight & code enforcement", label_es: "Deterioro y cumplimiento de códigos" },
+              { key: "youth", group: "topic", label_en: "Youth, seniors & access", label_es: "Jóvenes, mayores y accesibilidad" },
+              { key: "trash", group: "topic", label_en: "Trash & recycling", label_es: "Basura y reciclaje" },
+              { key: "airport", group: "topic", label_en: "Airport", label_es: "Aeropuerto" },
+              { key: "transit", group: "topic", label_en: "Buses & transit", label_es: "Autobuses y transporte" },
+              { key: "environment", group: "topic", label_en: "Trees, air & climate", label_es: "Árboles, aire y clima" },
+              { key: "government", group: "topic", label_en: "Elections & city rules", label_es: "Elecciones y reglas de la ciudad" },
+              { key: "hearings", group: "decision_type", label_en: "Public hearings (you can speak)", label_es: "Audiencias públicas (puede hablar)" },
+              { key: "over_1m", group: "decision_type", label_en: "Spending over $1 million", label_es: "Gastos de más de $1 millón" },
+              { key: "boards", group: "decision_type", label_en: "Board & commission seats", label_es: "Puestos en juntas y comisiones" },
+              { key: "recognitions", group: "decision_type", label_en: "Proclamations & awards", label_es: "Proclamaciones y premios" }
+            ];
+          },
+
+          councilMembers: [
+            {
+              id: 1,
+              name: "Rosa Escutia-Braaton",
+              district: "District 1",
+              role: "Council Member",
+              email: "rescutia-braaton@modestogov.com",
+              phone: "(209) 577-5229",
+              photo:
+                "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200",
+              recentVotesCount: 14,
+            },
+            {
+              id: 2,
+              name: "Eric E. Alvarez",
+              district: "District 2",
+              role: "Council Member",
+              email: "ealvarez@modestogov.com",
+              phone: "(209) 577-5229",
+              photo:
+                "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200",
+              recentVotesCount: 18,
+            },
+            {
+              id: 3,
+              name: "Chris Ricci",
+              district: "District 3",
+              role: "Council Member",
+              email: "cricci@modestogov.com",
+              phone: "(209) 577-5229",
+              photo:
+                "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200",
+              recentVotesCount: 16,
+            },
+            {
+              id: 4,
+              name: "Nick Bavaro",
+              district: "District 4",
+              role: "Council Member",
+              email: "nbavaro@modestogov.com",
+              phone: "(209) 577-5229",
+              photo:
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+              recentVotesCount: 15,
+            },
+            {
+              id: 5,
+              name: "Jeremiah Williams",
+              district: "District 5",
+              role: "Vice Mayor",
+              email: "jwilliams@modestogov.com",
+              phone: "(209) 577-5229",
+              photo:
+                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200",
+              recentVotesCount: 19,
+            },
+            {
+              id: 6,
+              name: "David Wright",
+              district: "District 6",
+              role: "Council Member",
+              email: "dwright@modestogov.com",
+              phone: "(209) 577-5229",
+              photo:
+                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200",
+              recentVotesCount: 12,
+            },
+          ],
+
+          districtsData: {
+            1: {
+              id: 1,
+              area: "North Modesto",
+              repName: "Rosa Escutia-Braaton",
+              repPhoto:
+                "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200",
+              email: "rescutia-braaton@modestogov.com",
+              description:
+                "Covers Standiford Ave north to Hwy 219 (Kiernan Ave) and Pelandale.",
+            },
+            2: {
+              id: 2,
+              area: "West Modesto & Airport",
+              repName: "Eric E. Alvarez",
+              repPhoto:
+                "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200",
+              email: "ealvarez@modestogov.com",
+              description:
+                "Covers West of Hwy 99, Paradise Rd, Carpenter Rd, and Crows Landing.",
+            },
+            3: {
+              id: 3,
+              area: "Central & Prescott",
+              repName: "Chris Ricci",
+              repPhoto:
+                "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200",
+              email: "cricci@modestogov.com",
+              description:
+                "Covers Prescott Rd, Carver Rd, and Vintage Faire mall corridor.",
+            },
+            4: {
+              id: 4,
+              area: "Downtown & La Loma",
+              repName: "Nick Bavaro",
+              repPhoto:
+                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+              email: "nbavaro@modestogov.com",
+              description:
+                "Covers Downtown Modesto, College Area, Dry Creek, and 10th Street Plaza.",
+            },
+            5: {
+              id: 5,
+              area: "East Modesto & Scenic",
+              repName: "Jeremiah Williams",
+              repPhoto:
+                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200",
+              email: "jwilliams@modestogov.com",
+              description:
+                "Covers East of Oakdale Rd along Scenic Dr and Yosemite Blvd.",
+            },
+            6: {
+              id: 6,
+              area: "Northeast & Sylvan",
+              repName: "David Wright",
+              repPhoto:
+                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200",
+              email: "dwright@modestogov.com",
+              description:
+                "Covers Sylvan Ave, McHenry Ave north corridor, and Beyer High neighborhood.",
+            },
+          },
+
+          votesHistory: [
+            {
+              id: 101,
+              memberName: "Rosa Escutia-Braaton",
+              date: "2026-09-22",
+              title: "Zoning Ordinance Amendment for Infill Housing",
+              summary: "Streamline building permits for multi-family units.",
+              category: "New development & zoning",
+              vote: "NO",
+            },
+            {
+              id: 102,
+              memberName: "Eric E. Alvarez",
+              date: "2026-10-13",
+              title: "Measure H Allocation for Homeless Outreach",
+              summary: "Approve $1.2M allocation for downtown outreach teams.",
+              category: "Housing & homelessness",
+              vote: "YES",
+            },
+            {
+              id: 103,
+              memberName: "Chris Ricci",
+              date: "2026-09-22",
+              title: "Zoning Ordinance Amendment for Infill Housing",
+              summary: "Streamline building permits for multi-family units.",
+              category: "New development & zoning",
+              vote: "YES",
+            },
+            {
+              id: 104,
+              memberName: "Nick Bavaro",
+              date: "2026-10-13",
+              title: "Measure H Allocation for Homeless Outreach",
+              summary: "Approve $1.2M allocation for downtown outreach teams.",
+              category: "Housing & homelessness",
+              vote: "YES",
+            },
+            {
+              id: 105,
+              memberName: "Jeremiah Williams",
+              date: "2026-09-08",
+              title: "Police Technology Modernization & ALPR",
+              summary: "Authorize acquisition of license plate reader cameras.",
+              category: "Police & crime",
+              vote: "YES",
+            },
+            {
+              id: 106,
+              memberName: "David Wright",
+              date: "2026-09-08",
+              title: "Police Technology Modernization & ALPR",
+              summary: "Authorize acquisition of license plate reader cameras.",
+              category: "Police & crime",
+              vote: "YES",
+            },
+          ],
+
+          get topicCategories() {
+            const q = (this.categorySearch || "").toLowerCase();
+            return this.allCategories.filter(
+              (c) =>
+                c.group === "topic" &&
+                (c.label_en.toLowerCase().includes(q) ||
+                  c.label_es.toLowerCase().includes(q)),
+            );
+          },
+
+          get decisionCategories() {
+            const q = (this.categorySearch || "").toLowerCase();
+            return this.allCategories.filter(
+              (c) =>
+                c.group === "decision_type" &&
+                (c.label_en.toLowerCase().includes(q) ||
+                  c.label_es.toLowerCase().includes(q)),
+            );
+          },
+
+          get activeDistrict() {
+            return (
+              this.districtsData[this.activeDistrictId] || this.districtsData[4]
+            );
+          },
+
+          get activeMemberVotes() {
+            if (!this.activeMember) return [];
+            return this.votesHistory.filter(
+              (v) => v.memberName === this.activeMember.name,
+            );
+          },
+
+          setLanguage(lang) {
+            this.language = lang;
+          },
+
+          toggleCategory(key) {
+            if (this.selectedCategories.includes(key)) {
+              this.selectedCategories = this.selectedCategories.filter(
+                (c) => c !== key,
+              );
+            } else {
+              this.selectedCategories.push(key);
+            }
+          },
+
+          async submitForm() {
+            const payload = {
+              name: this.name,
+              email: this.email,
+              categories: this.selectedCategories,
+              language: this.language
+            };
+
+            try {
+              const res = await fetch('http://localhost:3000/api/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              });
+              
+              const data = await res.json();
+              if (!res.ok) {
+                alert(data.error || 'Subscription failed.');
+                return;
+              }
+
+              console.log('Successfully subscribed:', data);
+              this.submitted = true;
+            } catch (err) {
+              console.error('Network error connecting to backend:', err);
+              alert('Could not connect to the backend server. Please make sure server.js is running.');
+            }
+          },
+
+          selectDistrict(id) {
+            this.activeDistrictId = id;
+          },
+
+          openMemberModal(member) {
+            this.activeMember = member;
+            this.modalOpen = true;
+          },
+
+          searchLocation() {
+            if (!this.searchAddress) return;
+            const q = this.searchAddress.toLowerCase();
+            let dId = 4;
+            if (q.includes("kiernan") || q.includes("pelandale")) dId = 1;
+            else if (
+              q.includes("paradise") ||
+              q.includes("crows") ||
+              q.includes("carpenter")
+            )
+              dId = 2;
+            else if (q.includes("standiford") || q.includes("prescott"))
+              dId = 3;
+            else if (q.includes("10th") || q.includes("downtown")) dId = 4;
+            else if (
+              q.includes("scenic") ||
+              q.includes("yosemite") ||
+              q.includes("oakdale")
+            )
+              dId = 5;
+            else if (q.includes("sylvan") || q.includes("mchenry")) dId = 6;
+            this.selectDistrict(dId);
+          },
+
+          initMap() {
+            try {
+              if (typeof mapboxgl === "undefined") return;
+              mapboxgl.accessToken = this.mapboxToken;
+              this.map = new mapboxgl.Map({
+                container: "map",
+                style: "mapbox://styles/mapbox/light-v11",
+                center: [-120.9969, 37.6391],
+                zoom: 11,
+              });
+              this.map.addControl(
+                new mapboxgl.NavigationControl(),
+                "top-right",
+              );
+            } catch (e) {
+              console.warn("Mapbox initialization skipped:", e);
+            }
+          },
+
+          async init() {
+            await this.initCategories();
+            this.$nextTick(() => {
+              this.initMap();
+            });
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
