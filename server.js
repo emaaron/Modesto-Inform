@@ -9,9 +9,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// ADD THIS LINE: This tells Express to serve index.html and other static assets from this folder
+app.use(express.static(__dirname));
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 const DATA_FILE = path.join(__dirname, 'subscribers.json');
 const CSV_FILE = path.join(__dirname, 'modesto-watch-categories.csv');
+
 
 // Helper: Parse CSV and return categories with both languages
 function getCategoriesFromCSV() {
@@ -58,8 +62,8 @@ app.get('/api/categories', (req, res) => {
   res.json(categories);
 });
 
-// 2. Updated Subscription Endpoint accepting language preference
-app.post('/api/subscribe', (req, res) => {
+// 2. Updated Subscription Endpoint accepting language preference and triggering Resend
+app.post('/api/subscribe', async (req, res) => {
   const { name, email, categories, language } = req.body;
   
   if (!email || !email.includes('@')) {
@@ -82,8 +86,49 @@ app.post('/api/subscribe', (req, res) => {
   subscribers.push(newSubscriber);
   saveSubscribers(subscribers);
 
-  console.log(`New subscriber: ${email} [Lang: ${newSubscriber.language}]`);
-  res.status(200).json({ message: newSubscriber.language === 'es' ? '¡Suscrito exitosamente!' : 'Subscribed successfully!' });
+  console.log(`New subscriber registered: ${email} [Lang: ${newSubscriber.language}]`);
+
+  // --- SEND EMAIL VIA RESEND ---
+  try {
+    const isSpanish = newSubscriber.language === 'es';
+    
+    const subject = isSpanish 
+      ? '¡Bienvenido a Modesto Informed - Alertas Activas!' 
+      : 'Welcome to Modesto Informed - Custom Alerts Active!';
+
+    const htmlContent = isSpanish ? `
+      <div style="font-family: Arial, sans-serif; color: #334155; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <h2 style="color: #15803d;">¡Hola ${newSubscriber.name}!</h2>
+        <p>Has activado exitosamente tus alertas personalizadas para el Concejo Municipal de Modesto.</p>
+        <p>Te notificaremos cuando tus temas seleccionados aparezcan en las próximas agendas oficiales.</p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #64748b;">Modesto Informed — Proyecto Comunitario Independiente</p>
+      </div>
+    ` : `
+      <div style="font-family: Arial, sans-serif; color: #334155; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+        <h2 style="color: #15803d;">Welcome, ${newSubscriber.name}!</h2>
+        <p>Your custom Modesto City Council alerts have been successfully activated.</p>
+        <p>We will email you whenever your selected categories appear on an upcoming official agenda.</p>
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #64748b;">Modesto Informed — Independent Community Project</p>
+      </div>
+    `;
+
+    await resend.emails.send({
+      from: 'Modesto Informed <onboarding@resend.dev>', // Change to your verified domain when ready
+      to: [newSubscriber.email],
+      subject: subject,
+      html: htmlContent,
+    });
+
+    console.log(`Welcome email successfully dispatched to ${email}`);
+  } catch (error) {
+    console.error('Failed to send email via Resend:', error);
+  }
+
+  res.status(200).json({ 
+    message: newSubscriber.language === 'es' ? '¡Suscrito exitosamente!' : 'Subscribed successfully!' 
+  });
 });
 
 const PORT = process.env.PORT || 3000;
